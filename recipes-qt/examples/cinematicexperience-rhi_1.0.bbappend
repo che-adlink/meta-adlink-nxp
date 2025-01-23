@@ -1,0 +1,1 @@
+QT_PTEST_ENABLED = "0"
