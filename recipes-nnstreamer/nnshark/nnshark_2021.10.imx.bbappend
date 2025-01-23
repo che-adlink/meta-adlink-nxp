@@ -1,7 +1,8 @@
 FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"
 
-SRC_URI:append = " file://common.tar.xz"
+NNSHARK_SRC = "gitsm://github.com/che-adlink/nnshark.git;protocol=https"
+SRCBRANCH = "2021.10.imx"
+SRC_URI = "${NNSHARK_SRC};branch=${SRCBRANCH}"
 
-do_configure:prepend () {
-  cp -r ${WORKDIR}/common/* ${S}/common
-}
+SRCREV = "2cc89e7c3eb193518b8bbf5bf3f206c93679f0a0"
+
