@@ -130,6 +130,29 @@
 		regulator-always-on;
 	};
 
+	reg_csi1_cam_pwdn: regulatorex-csi1_cam_pwdn {
+		compatible = "regulator-fixed";
+		regulator-name = "csi1_cam_pwdn";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		regulator-always-on;
+		gpio = <&gpio2 11 GPIO_ACTIVE_HIGH>;
+		enable-active-high;
+	};
+
+	reg_csi1_clk_en: regulatorex-csi1_clk_en {
+		compatible = "regulator-fixed";
+		regulator-name = "csi1_clk_en";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		regulator-always-on;
+		regulator-boot-on;
+		vin-supply = <&reg_csi1_cam_pwdn>;
+		startup-delay-us = <200000>;
+		gpio = <&gpio2 20 GPIO_ACTIVE_HIGH>;
+		enable-active-high;
+	};
+
 	sound-hdmi {
 		compatible = "fsl,imx-audio-hdmi";
 		model = "audio-hdmi";
@@ -559,6 +582,30 @@
 		reg = <0x6a>;
 		compatible = "pi,6cg33202";
 	}; */
+
+	imx678_0: imx678_mipi@1a {
+		compatible = "framos,imx678";
+		reg = <0x1a>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_csi0_pwn>, <&pinctrl_csi0_rst>, <&pinctrl_csi_mclk>;
+		clocks = <&clk IMX8MP_CLK_IPP_DO_CLKO2>;
+		clock-names = "csi_mclk";
+		csi_id = <0>;
+		rst-gpios = <&gpio1 6 GPIO_ACTIVE_LOW>;
+		mipi_csi;
+		status = "okay";
+		mclk = <24000000>;
+		mclk_source = <0>;
+
+		port {
+			imx678_mipi_0_ep: endpoint {
+				remote-endpoint = <&mipi_csi0_ep>;
+				data-lanes = <1 2 3 4>;
+				clock-lanes = <0>;
+				max-pixel-frequency = /bits/ 64 <500000000>;
+			};
+		};
+	};
 
 };
 
@@ -1257,4 +1304,69 @@ fsl,pins = <PIN_FUNC_ID CONFIG>,
 
 &mix_gpu_ml {
 	status = "okay";
+};
+
+
+// che
+&cameradev {
+	status = "okay";
+};
+
+&isi_0 {
+	status = "disabled";
+};
+
+&isi_1 {
+	status = "disabled";
+};
+
+&isp_0 {
+	status = "okay";
+};
+
+&dewarp {
+	status = "okay";
+};
+
+&mipi_csi_0 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	status = "okay";
+
+	port@0 {
+		reg = <0>;
+		mipi_csi0_ep: endpoint {
+			remote-endpoint = <&imx678_mipi_0_ep>;
+			data-lanes = <4>;
+			csis-hs-settle = <13>;
+			csis-clk-settle = <2>;
+			csis-wclk;
+		};
+	};
+};
+
+&mipi_csi_1 {
+	status = "disabled";
+};
+
+
+&iomuxc {
+	pinctrl_csi0_pwn: csi0_pwn_grp {
+		fsl,pins = <
+			MX8MP_IOMUXC_SD1_STROBE__GPIO2_IO11     0x10
+		>;
+	};
+
+	pinctrl_csi0_rst: csi0_rst_grp {
+		fsl,pins = <
+			MX8MP_IOMUXC_GPIO1_IO06__GPIO1_IO06             0x10
+		>;
+	};
+
+	pinctrl_csi_mclk: csi_mclk_grp {
+		fsl,pins = <
+			MX8MP_IOMUXC_GPIO1_IO15__CCM_CLKO2      0x50
+		>;
+	};
+
 };
